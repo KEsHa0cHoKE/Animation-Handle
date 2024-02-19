@@ -1,0 +1,1 @@
+anim_click.met_anim_lerp([0.5, 1], 0.2)

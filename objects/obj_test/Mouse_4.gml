@@ -1,0 +1,1 @@
+anim_click.met_control_start()
