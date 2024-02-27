@@ -46,11 +46,21 @@ function class_animation() constructor
 			
 			if (!is_array(_varsString))
 			{
+				if (!is_string(_varsString))
+				{
+					show_error("Ошибка в met_vars_add. Предоставленное значение/значения не являются НАЗВАНИЕМ переменной в формате строки. Используйте функцию nameof() для добавления переменных", true)
+				}
+				
 				array_push(var_names_to_anim, _varsString)
 				var _value = variable_instance_get(_id, _varsString)
 			}
 			else
 			{
+				if (!is_string(_varsString[0]))
+				{
+					show_error("Ошибка в met_vars_add. Предоставленное значение/значения не являются НАЗВАНИЕМ переменной в формате строки. Используйте функцию nameof() для добавления переменных", true)
+				}
+				
 				for (var i=0; i<array_length(_varsString); i++)
 				{
 					array_push(var_names_to_anim, _varsString[i])
