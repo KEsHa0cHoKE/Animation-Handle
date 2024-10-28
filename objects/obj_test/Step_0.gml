@@ -1,1 +1,1 @@
-anim_click.met_anim_lerp([0.5, 1], 0.2)
+anim_scale.anim_time([0.5, 1, 0.5, 1], 0.5)

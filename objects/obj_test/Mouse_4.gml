@@ -1,1 +1,1 @@
-anim_click.met_control_start()
+anim_scale.met_control_start()

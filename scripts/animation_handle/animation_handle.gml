@@ -1,8 +1,6 @@
 ///@desc Конструктор, отвечающий за анимацию.
-///Переменные для анимации необходимо добавлять в 
-///экземпляр конструктора через метод met_vars_add.
 ///Состояния анимации (var_state): 0/false -> не анимируется | >=1/true -> анимируется.
-function class_animation() constructor
+function class_animation(_id, _varsStringToAnimate) constructor
 {
 	#region Переменные
 	
@@ -36,11 +34,12 @@ function class_animation() constructor
 	#region Методы
 	
 		#region Массив переменных для анимации
-	
+		
+		///@func met_vars_add(_id, _varsString)
 		///@desc Добавляет переменную/массив переменных для их последующей анимации
 		///@arg {Id.Instance} _id id экземпляра объекта
 		///@arg {Any} _varsString имя/массив имен переменных для добавления
-		met_vars_add = function(_id, _varsString)
+		static met_vars_add = function(_id, _varsString)
 		{
 			target_instance_id = _id
 			
@@ -68,23 +67,34 @@ function class_animation() constructor
 				}
 			}
 		}
-	
+		
+		///@func met_vars_clear()
 		///@desc Очищает массив анимируемых переменных
-		met_vars_clear = function()
+		static met_vars_clear = function()
 		{
 			array_resize(var_names_to_anim, 0)
+		}
+		
+		///@func met_vars_is_anim_active()
+		///@desc Возвращает, воспроизводится ли анимация
+		static met_vars_is_anim_active = function()
+		{
+			return (var_state > 0)
 		}
 	
 		#endregion
 		
 		
 		#region Callback
-	
+		
+		///@func met_callback_set(_keyframe, _methodOrFunc)
 		///@desc Устанавливает функцию/метод, который будет выполнен на предоставленном в первом аргументе
 		///ключевом кадре анимации. Индексация начинается с 0.
 		///Если необходимо связать метод с концом анимации, в аргументе _keyframe можно использовать
 		///макрос ANIM_END или просто значение -1
-		met_callback_set = function(_keyframe, _methodOrFunc)
+		///@arg {Real} _keyframe Ключевой кадр. Если конец анимации то ANIM_END или -1
+		///@arg {Function} _methodOrFunc Функция/метод
+		static met_callback_set = function(_keyframe, _methodOrFunc)
 		{
 			if (!is_callable(_methodOrFunc))
 			{
@@ -100,8 +110,9 @@ function class_animation() constructor
 			var_callback_methods[_keyframe] = method(undefined, _methodOrFunc)
 		}
 		
+		///@func met_callback_delete(_keyframe)
 		///@desc Удаляет функцию/метод, привязанный к кадру анимации
-		met_callback_delete = function(_keyframe)
+		static met_callback_delete = function(_keyframe)
 		{
 			if (_keyframe == ANIM_END)
 			{
@@ -116,9 +127,10 @@ function class_animation() constructor
 			
 			var_callback_methods[_keyframe] = undefined
 		}
-	
+		
+		///@func met_callback_clear()
 		///@desc Сбрасывает ВСЕ установленные функции/методы
-		met_callback_clear = function()
+		static met_callback_clear = function()
 		{
 			array_resize(var_callback_methods, 0)
 			
@@ -129,23 +141,26 @@ function class_animation() constructor
 		
 		
 		#region Контроль анимации
-	
+		
+		///@func met_control_start()
 		///@desc Запускает анимацию
-		met_control_start = function()
+		static met_control_start = function()
 		{
 			var_state = 1
 		}
-	
+		
+		///@func met_control_end()
 		///@desc Принудительно завершает анимацию. 
 		///Анимируемые переменные остаются в состоянии на момент принудительного завершения
-		met_control_end = function()
+		static met_control_end = function()
 		{
 			var_state = 0
 		}
 		
+		///@func met_control_speed_reset()
 		///@desc Сбрасывает установленную скорость для ее перерасчета
 		///с текущего значения анимируемой переменной
-		met_control_speed_reset = function()
+		static met_control_speed_reset = function()
 		{
 			var_speed_frames			= undefined
 			var_speed_frames_overall	= undefined
@@ -161,7 +176,7 @@ function class_animation() constructor
 			#region Вспомогательные методы (!!!НЕ ДЛЯ ИСПОЛЬЗОВАНИЯ!!!)
 			
 			///@ignore
-			__met_next_state = function(_valuesArray)
+			static __met_next_state = function(_valuesArray)
 			{
 				if (!is_undefined(var_callback_methods))
 				{
@@ -186,7 +201,7 @@ function class_animation() constructor
 			}
 		
 			///@ignore
-			__met_update_vars_values = function(_value)
+			static __met_update_vars_values = function(_value)
 			{
 				for (var i=0; i<array_length(var_names_to_anim); i++)
 				{
@@ -196,15 +211,16 @@ function class_animation() constructor
 			
 			#endregion
 		
-		///@desc Анимирует переменные, используя скорость анимации. 
+		///@func anim_speed(_valuesArray, _spd)
+		///@desc Анимирует переменные, используя скорость анимации.
 		///Первый аргумент принимает массив ключевых значений для анимации.
-		anim_speed = function(_valuesArray, _spd)
+		static anim_speed = function(_valuesArray, _spd)
 		{
 			if (var_state == 0) then exit;
 		
 			if (array_length(var_names_to_anim) < 1)
 			{
-				show_error("Ошибка в met_anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+				show_error("Ошибка в anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
@@ -242,15 +258,16 @@ function class_animation() constructor
 			}
 		}
 		
-		///@desc Анимирует переменные, используя кол-во кадров, за которое должно достигаться одно значение. 
+		///@func anim_frames(_valuesArray, _frames)
+		///@desc Анимирует переменные, используя кол-во кадров, за которое должно достигаться одно значение.
 		///Первый аргумент принимает массив ключевых значений для анимации.
-		anim_frames = function(_valuesArray, _frames)
+		static anim_frames = function(_valuesArray, _frames)
 		{
 			if (var_state == 0) then exit;
 		
 			if (array_length(var_names_to_anim) < 1)
 			{
-				show_error("Ошибка в met_anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+				show_error("Ошибка в anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
@@ -288,20 +305,21 @@ function class_animation() constructor
 				__met_update_vars_values(_value)
 			}
 			else if (_value == _targetValue)
-			{	
+			{
 				__met_next_state(_valuesArray)
 			}
 		}
 		
-		///@desc Анимирует переменные, используя кол-во кадров, за которое должна проиграться вся анимация. 
+		///@func anim_frames_overall(_valuesArray, _frames)
+		///@desc Анимирует переменные, используя кол-во кадров, за которое должна проиграться вся анимация.
 		///Первый аргумент принимает массив ключевых значений для анимации.
-		anim_frames_overall = function(_valuesArray, _frames)
+		static anim_frames_overall = function(_valuesArray, _frames)
 		{
 			if (var_state == 0) then exit;
 		
 			if (array_length(var_names_to_anim) < 1)
 			{
-				show_error("Ошибка в met_anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+				show_error("Ошибка в anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
@@ -344,15 +362,16 @@ function class_animation() constructor
 			}
 		}
 		
-		///@desc Анимирует переменные, используя время в секундах, за которое должно достигаться одно значение. 
+		///@func anim_time(_valuesArray, _seconds)
+		///@desc Анимирует переменные, используя время в секундах, за которое должно достигаться одно значение.
 		///Первый аргумент принимает массив ключевых значений для анимации.
-		anim_time = function(_valuesArray, _seconds)
+		static anim_time = function(_valuesArray, _seconds)
 		{
 			if (var_state == 0) then exit;
 		
 			if (array_length(var_names_to_anim) < 1)
 			{
-				show_error("Ошибка в met_anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+				show_error("Ошибка в anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
@@ -395,15 +414,16 @@ function class_animation() constructor
 			}
 		}
 		
-		///@desc Анимирует переменные, используя время в секундах, за которое должна проиграться вся анимация. 
+		///@func anim_time_overall(_valuesArray, _seconds)
+		///@desc Анимирует переменные, используя время в секундах, за которое должна проиграться вся анимация.
 		///Первый аргумент принимает массив значений для анимации.
-		anim_time_overall = function(_valuesArray, _seconds)
+		static anim_time_overall = function(_valuesArray, _seconds)
 		{
 			if (var_state == 0) then exit;
 		
 			if (array_length(var_names_to_anim) < 1)
 			{
-				show_error("Ошибка в met_anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+				show_error("Ошибка в anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
@@ -446,17 +466,18 @@ function class_animation() constructor
 			}
 		}
 		
-		///@desc Анимирует переменные, используя множитель интерполяции. 
+		///@func anim_lerp(_valuesArray, _lerp, [_maxDifference = 0.01])
+		///@desc Анимирует переменные, используя множитель интерполяции.
 		///Первый аргумент принимает массив ключевых значений для анимации.
 		///Третий - максимальную разницу в значениях при достижении которой значение сразу меняется на целевое,
 		///чтобы избежать длительного "простаивания" анимации на одном значении (по умолчанию - 0.01)
-		anim_lerp = function(_valuesArray, _lerp, _maxDifference = 0.01)
+		static anim_lerp = function(_valuesArray, _lerp, _maxDifference = 0.01)
 		{
 			if (var_state == 0) then exit;
 		
 			if (array_length(var_names_to_anim) < 1)
 			{
-				show_error("Ошибка в met_anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+				show_error("Ошибка в anim_*. Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
@@ -479,6 +500,8 @@ function class_animation() constructor
 		#endregion
 	
 	#endregion
+	
+	met_vars_add(_id, _varsStringToAnimate)
 }
 
 
@@ -490,7 +513,7 @@ function class_animation() constructor
 
 
 
-
+///@func animation_handle(_varAnimStateString, _varToAnimateString, _firstValue, _secondValue, _spd)
 ///@deprecated
 ///@desc УСТАРЕЛО!!!
 ///Анимирует переменную объекта, используя для контроля анимации его переменную-состояние анимации, 
