@@ -13,12 +13,18 @@ function class_animation(_id, _varsStringToAnimate) constructor
 	// Хранит название анимируемых переменных в виде строки
 	var_names_to_anim			= []
 	
-	// Хранят в себе скорость анимации (значение, прибавляемое за один кадр) 
+	// Хранят в себе скорость анимации (значение, прибавляемое за один кадр, в процентах) 
 	// при ее активном исполнении. При завершении анимации вновь становятся undefined
 	var_speed_frames			= undefined
 	var_speed_frames_overall	= undefined
 	var_speed_time				= undefined
 	var_speed_time_overall		= undefined
+	
+	// Процент на кривой, на котором сейчас находится анимация от 0 до 1
+	var_anim_percent			= 0
+	
+	// Стартовое значение, от которого анимируется переменная
+	var_base_value				= undefined
 	
 	// Массив хранит в себе методы/функции которые будут выполнены на указанных стадиях анимации (опционально)
 	var_callback_methods		= []
@@ -147,12 +153,15 @@ function class_animation(_id, _varsStringToAnimate) constructor
 		static met_control_start = function()
 		{
 			var_state = 1
+			
+			var_base_value = variable_instance_get(target_instance_id, var_names_to_anim[0])
+			var_anim_percent = 0
 		}
 		
-		///@func met_control_end()
+		///@func met_control_stop()
 		///@desc Принудительно завершает анимацию. 
 		///Анимируемые переменные остаются в состоянии на момент принудительного завершения
-		static met_control_end = function()
+		static met_control_stop = function()
 		{
 			var_state = 0
 		}
@@ -166,6 +175,9 @@ function class_animation(_id, _varsStringToAnimate) constructor
 			var_speed_frames_overall	= undefined
 			var_speed_time				= undefined
 			var_speed_time_overall		= undefined
+			
+			var_anim_percent			= 0
+			var_base_value				= variable_instance_get(target_instance_id, var_names_to_anim[0])
 		}
 	
 		#endregion
@@ -175,9 +187,12 @@ function class_animation(_id, _varsStringToAnimate) constructor
 			
 			#region Вспомогательные методы (!!!НЕ ДЛЯ ИСПОЛЬЗОВАНИЯ!!!)
 			
+			///@func __met_next_state(_valuesArray, [_baseValue = var_base_value])
 			///@ignore
-			static __met_next_state = function(_valuesArray)
+			static __met_next_state = function(_valuesArray, _baseValue = var_base_value)
 			{
+				var_base_value = _baseValue
+				
 				if (!is_undefined(var_callback_methods))
 				{
 					if (
@@ -199,7 +214,8 @@ function class_animation(_id, _varsStringToAnimate) constructor
 					}
 				}
 			}
-		
+			
+			///@func __met_update_vars_values(_value)
 			///@ignore
 			static __met_update_vars_values = function(_value)
 			{
@@ -211,10 +227,10 @@ function class_animation(_id, _varsStringToAnimate) constructor
 			
 			#endregion
 		
-		///@func anim_speed(_valuesArray, _spd)
+		///@func anim_speed(_valuesArray, _spd, [_animCurve = ANIM_CURVE_LINEAR])
 		///@desc Анимирует переменные, используя скорость анимации.
 		///Первый аргумент принимает массив ключевых значений для анимации.
-		static anim_speed = function(_valuesArray, _spd)
+		static anim_speed = function(_valuesArray, _spd, _animCurve = ANIM_CURVE_LINEAR)
 		{
 			if (var_state == 0) then exit;
 		
@@ -229,7 +245,7 @@ function class_animation(_id, _varsStringToAnimate) constructor
 			if (_value < _targetValue)
 			{
 				_value += _spd
-			
+				
 				if (_value >= _targetValue)
 				{
 					_value = _targetValue
@@ -272,7 +288,7 @@ function class_animation(_id, _varsStringToAnimate) constructor
 			
 			var _value			= variable_instance_get(target_instance_id, var_names_to_anim[0])
 			var _targetValue	= _valuesArray[var_state-1]
-		
+			
 			if (is_undefined(var_speed_frames))
 			{
 				var_speed_frames = abs(_targetValue-_value)/_frames

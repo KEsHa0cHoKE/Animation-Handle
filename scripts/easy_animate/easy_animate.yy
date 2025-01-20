@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"animation_handle",
+  "%Name":"easy_animate",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"animation_handle",
+  "name":"easy_animate",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"Easy Animate",
+    "path":"folders/Scripts/Easy Animate.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
