@@ -1,1 +1,0 @@
-anim_scale.met_control_start()

@@ -11,8 +11,8 @@
   "function":2,
   "name":"ANIM_CURVE_CIRC",
   "parent":{
-    "name":"Easy Animate",
-    "path":"folders/Scripts/Easy Animate.yy",
+    "name":"Curves",
+    "path":"folders/Scripts/Easy Animate/Curves.yy",
   },
   "resourceType":"GMAnimCurve",
   "resourceVersion":"2.0",
