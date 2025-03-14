@@ -160,10 +160,16 @@ function Anim(_id, _varsStringToAnimate) constructor
 		
 		#region Контроль анимации
 		
-		///@func met_control_start()
+		///@func met_control_start(_resetAllSpeeds = true)
 		///@desc Запускает анимацию
-		static met_control_start = function()
+		///@param {Bool} _resetAllSpeeds Сбросить все скорости с предыдущей анимации
+		static met_control_start = function(_resetAllSpeeds = true)
 		{
+			if (_resetAllSpeeds)
+			{
+				met_control_speed_reset()
+			}
+			
 			var_state = 1
 			
 			var_curve_base_value = variable_instance_get(var_target_instance_id, var_names_to_anim[0])
@@ -246,11 +252,13 @@ function Anim(_id, _varsStringToAnimate) constructor
 				if (++var_state > array_length(_valuesArray))
 				{
 					var_state = 0
-				
+					
 					if (is_callable(var_callback_method_animEnd))
 					{
 						var_callback_method_animEnd()
 					}
+					
+					//met_control_stop()
 				}
 			}
 			
