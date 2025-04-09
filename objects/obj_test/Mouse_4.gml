@@ -1,0 +1,1 @@
+anim_pulse.met_control_start(E_ANIM.TIME_OVERALL, [1.2, 1], 0.5, ANIM_CURVE_QUART)
