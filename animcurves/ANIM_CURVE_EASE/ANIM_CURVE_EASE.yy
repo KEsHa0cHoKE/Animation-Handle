@@ -11,7 +11,7 @@
   "name":"ANIM_CURVE_EASE",
   "parent":{
     "name":"Curves",
-    "path":"folders/Scripts/Easy Animate/Curves.yy",
+    "path":"folders/Easy Animate/Curves.yy",
   },
   "resourceType":"GMAnimCurve",
   "resourceVersion":"2.0",
