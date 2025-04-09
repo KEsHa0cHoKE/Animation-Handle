@@ -1,5 +1,11 @@
 // by KEsHa_cHoKE
 
+// Имя переменной в инстансе, куда будут добавлены анимируемые в данный момент переменные
+#macro	__INSTANCE_ANIMATABLE_VARS_NAME		"__animatable_vars"
+// Макрос на случай, если необходимо добавить метод к концу анимации
+#macro	ANIM_END							-1
+
+// Тип анимации
 enum E_ANIM {
 	FRAMES,
 	FRAMES_OVERALL,
@@ -40,9 +46,6 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 	var_callback_methods		= []
 	// Хранит метод/функцию для использования в конце анимации
 	var_callback_method_animEnd = undefined
-	
-	// Макрос на случай, если необходимо добавить метод к концу анимации
-	#macro						  ANIM_END -1
 	
 	#endregion
 	
@@ -606,11 +609,6 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 	// Хранит метод/функцию для использования в конце анимации
 	var_callback_method_animEnd = undefined
 	
-	// Макрос на случай, если необходимо добавить метод к концу анимации
-	#macro						  ANIM_END -1
-	// Имя переменной в инстансе, куда будут добавлены анимируемые в данный момент переменные
-	#macro						  __INSTANCE_ANIMATABLE_VARS_NAME "animatable_vars"
-	
 	#endregion
 	
 	
@@ -1028,30 +1026,6 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 	met_vars_add(_id, _varsStringToAnimate)
 }
 
-/*
-anim_x = new Anim()
-anim_y = new Anim()
-anim_scale = new Anim()
-animGroup_move_to_point = new AnimGroup(id, [
-	[
-		[ anim_x, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART ],
-		[ anim_y, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART ]
-	],
-	[
-		[ anim_scale, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART ]	
-	]
-])
-*/
-
-
-///@func AnimGroup(_id, _groupName, _animsArray)
-///@param {Asset.GMObject|Id.Instance} _id
-///@param {String} _groupName
-///@param {Array<Array<Array<Any>>>} _animsArray
-function AnimGroup(_id, _groupName, _animsArray) constructor
-{
-	
-}
 
 
 ///@func anim_is_var_animating(_id, _varName)
@@ -1066,3 +1040,86 @@ function anim_is_var_animating(_id, _varName)
 	var _animatableVarsArray = variable_instance_get(_id, __INSTANCE_ANIMATABLE_VARS_NAME)
 	return (array_contains(_animatableVarsArray, _varName))
 }
+
+
+
+
+
+
+#region Anim Groups
+
+///*
+//anim_x = new Anim()
+//anim_y = new Anim()
+//anim_scale = new Anim()
+//animGroup_move_to_point = new AnimGroup(id, [
+//	[
+//		new AnimGroupElem(anim_x, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART),
+//		new AnimGroupElem(anim_y, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART)
+//	],
+//	[
+//		new AnimGroupElem(anim_scale, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART)	
+//	]
+//])
+//*/
+
+/////@func AnimGroupElem
+/////@param {Struct.AnimTs} _animTsStruct
+/////@param {Constant.E_ANIM} _eAnimType
+/////@param {Array<Real>} _valuesArray
+/////@param {Real} _period
+/////@param {Asset.GMAnimCurve} _curve
+//function AnimGroupElem(_animTsStruct, _eAnimType, _valuesArray, _period, _curve) constructor
+//{
+//	anim_struct = _animTsStruct
+//	anim_type = _eAnimType
+//	values_array = _valuesArray
+//	period = _period
+//	curve = _curve
+	
+//	///@func met_start
+//	///@desc Запускает анимацию
+//	met_start = function()
+//	{
+//		anim_struct.met_control_start(anim_type, values_array, period, curve)
+//	}
+	
+//	///@func met_stop
+//	///@desc Принудительно завершает анимацию
+//	met_stop = function()
+//	{
+//		anim_struct.met_control_stop()
+//	}
+	
+//	///@func met_pause
+//	///@desc Пауза
+//	met_pause = function()
+//	{
+//		anim_struct.met_control_pause()
+//	}
+	
+//	///@func met_unpause
+//	///@desc Возобновление
+//	met_unpause = function()
+//	{
+//		anim_struct.met_control_unpause()
+//	}
+	
+//	///@func met_is_active
+//	met_is_active = function()
+//	{
+//		anim_struct.met_vars_is_anim_active()
+//	}
+//}
+
+/////@func AnimGroup(_id, _groupName, _animsArray)
+/////@param {Asset.GMObject|Id.Instance} _id
+/////@param {Array<Array<Struct.AnimGroupElem>>} _animsArray
+//function AnimGroup(_id, _animsArray) constructor
+//{
+//	state = 0
+//	inst = _id
+//	anims_array = _animsArray
+//}
+
+#endregion
