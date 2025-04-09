@@ -1,5 +1,11 @@
 // by KEsHa_cHoKE
 
+// Имя переменной в инстансе, куда будут добавлены анимируемые в данный момент переменные
+#macro	__INSTANCE_ANIMATABLE_VARS_NAME		"__animatable_vars"
+// Макрос на случай, если необходимо добавить метод к концу анимации
+#macro	ANIM_END							-1
+
+// Тип анимации
 enum E_ANIM {
 	FRAMES,
 	FRAMES_OVERALL,
@@ -20,7 +26,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 	var_state_pause_remembered	= undefined // Стейт, сохранённый перед паузой
 	
 	// Хранит id экземпляра объекта, к которому привязан экземпляр конструктора
-	var_target_instance_id		= undefined
+	inst		= undefined
 	// Хранит названия анимируемых переменных в виде строки
 	var_names_to_anim			= []
 	
@@ -41,9 +47,6 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 	// Хранит метод/функцию для использования в конце анимации
 	var_callback_method_animEnd = undefined
 	
-	// Макрос на случай, если необходимо добавить метод к концу анимации
-	#macro						  ANIM_END -1
-	
 	#endregion
 	
 	
@@ -58,7 +61,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 		///@arg {Any} _varsString имя/массив имен переменных для добавления
 		static met_vars_add = function(_id, _varsString)
 		{
-			var_target_instance_id = _id
+			inst = _id
 			
 			if (!is_array(_varsString))
 			{
@@ -179,7 +182,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 			
 			var_state = 1
 			
-			var_curve_base_value = variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+			var_curve_base_value = variable_instance_get(inst, var_names_to_anim[0])
 			var_curve_percent = 0
 		}
 		
@@ -275,13 +278,13 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 			{
 				for (var i=0; i<array_length(var_names_to_anim); i++)
 				{
-					if (is_struct(var_target_instance_id))
+					if (is_struct(inst))
 					{
-						var_target_instance_id[$ var_names_to_anim[i]] = _value
+						inst[$ var_names_to_anim[i]] = _value
 					}
 					else
 					{
-						variable_instance_set(var_target_instance_id, var_names_to_anim[i], _value)
+						variable_instance_set(inst, var_names_to_anim[i], _value)
 					}
 				}
 			}
@@ -310,7 +313,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 				show_error("easy_animate : anim_speed -> Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом 'met_vars_add' для их добавления", true)
 			}
 			
-			var _value			= variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+			var _value			= variable_instance_get(inst, var_names_to_anim[0])
 			var _targetValue	= _valuesArray[var_state-1]
 			
 			if (_value < _targetValue)
@@ -385,7 +388,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 				_value = var_curve_base_value+((_targetValue-var_curve_base_value)*_curveValue)
 				__met_set_vars_to_inst(_value)
 					
-				var_curve_base_value = variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+				var_curve_base_value = variable_instance_get(inst, var_names_to_anim[0])
 				__met_next_state(_valuesArray)
 			}
 		}
@@ -430,7 +433,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 				_value = var_curve_base_value+((_targetValue-var_curve_base_value)*_curveValue)
 				__met_set_vars_to_inst(_value)
 					
-				var_curve_base_value = variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+				var_curve_base_value = variable_instance_get(inst, var_names_to_anim[0])
 				__met_next_state(_valuesArray)
 			}
 		}
@@ -475,7 +478,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 				_value = var_curve_base_value+((_targetValue-var_curve_base_value)*_curveValue)
 				__met_set_vars_to_inst(_value)
 					
-				var_curve_base_value = variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+				var_curve_base_value = variable_instance_get(inst, var_names_to_anim[0])
 				__met_next_state(_valuesArray)
 			}
 		}
@@ -520,7 +523,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 				_value = var_curve_base_value+((_targetValue-var_curve_base_value)*_curveValue)
 				__met_set_vars_to_inst(_value)
 					
-				var_curve_base_value = variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+				var_curve_base_value = variable_instance_get(inst, var_names_to_anim[0])
 				__met_next_state(_valuesArray)
 			}
 		}
@@ -539,7 +542,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 				show_error("easy_animate : anim_lerp -> Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
 			}
 			
-			var _value			= variable_instance_get(var_target_instance_id, var_names_to_anim[0])
+			var _value			= variable_instance_get(inst, var_names_to_anim[0])
 			var _targetValue	= _valuesArray[var_state-1]
 			
 			if (abs(_targetValue-_value) > _maxDifference)
@@ -605,11 +608,6 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 	var_callback_methods		= []
 	// Хранит метод/функцию для использования в конце анимации
 	var_callback_method_animEnd = undefined
-	
-	// Макрос на случай, если необходимо добавить метод к концу анимации
-	#macro						  ANIM_END -1
-	// Имя переменной в инстансе, куда будут добавлены анимируемые в данный момент переменные
-	#macro						  __INSTANCE_ANIMATABLE_VARS_NAME "animatable_vars"
 	
 	#endregion
 	
@@ -1028,30 +1026,6 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 	met_vars_add(_id, _varsStringToAnimate)
 }
 
-/*
-anim_x = new Anim()
-anim_y = new Anim()
-anim_scale = new Anim()
-animGroup_move_to_point = new AnimGroup(id, [
-	[
-		[ anim_x, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART ],
-		[ anim_y, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART ]
-	],
-	[
-		[ anim_scale, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART ]	
-	]
-])
-*/
-
-
-///@func AnimGroup(_id, _groupName, _animsArray)
-///@param {Asset.GMObject|Id.Instance} _id
-///@param {String} _groupName
-///@param {Array<Array<Array<Any>>>} _animsArray
-function AnimGroup(_id, _groupName, _animsArray) constructor
-{
-	
-}
 
 
 ///@func anim_is_var_animating(_id, _varName)
@@ -1066,3 +1040,86 @@ function anim_is_var_animating(_id, _varName)
 	var _animatableVarsArray = variable_instance_get(_id, __INSTANCE_ANIMATABLE_VARS_NAME)
 	return (array_contains(_animatableVarsArray, _varName))
 }
+
+
+
+
+
+
+#region Anim Groups
+
+///*
+//anim_x = new Anim()
+//anim_y = new Anim()
+//anim_scale = new Anim()
+//animGroup_move_to_point = new AnimGroup(id, [
+//	[
+//		new AnimGroupElem(anim_x, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART),
+//		new AnimGroupElem(anim_y, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART)
+//	],
+//	[
+//		new AnimGroupElem(anim_scale, E_ANIM.FRAMES_OVERALL, [50], 120, ANIM_CURVE_QUART)	
+//	]
+//])
+//*/
+
+/////@func AnimGroupElem
+/////@param {Struct.AnimTs} _animTsStruct
+/////@param {Constant.E_ANIM} _eAnimType
+/////@param {Array<Real>} _valuesArray
+/////@param {Real} _period
+/////@param {Asset.GMAnimCurve} _curve
+//function AnimGroupElem(_animTsStruct, _eAnimType, _valuesArray, _period, _curve) constructor
+//{
+//	anim_struct = _animTsStruct
+//	anim_type = _eAnimType
+//	values_array = _valuesArray
+//	period = _period
+//	curve = _curve
+	
+//	///@func met_start
+//	///@desc Запускает анимацию
+//	met_start = function()
+//	{
+//		anim_struct.met_control_start(anim_type, values_array, period, curve)
+//	}
+	
+//	///@func met_stop
+//	///@desc Принудительно завершает анимацию
+//	met_stop = function()
+//	{
+//		anim_struct.met_control_stop()
+//	}
+	
+//	///@func met_pause
+//	///@desc Пауза
+//	met_pause = function()
+//	{
+//		anim_struct.met_control_pause()
+//	}
+	
+//	///@func met_unpause
+//	///@desc Возобновление
+//	met_unpause = function()
+//	{
+//		anim_struct.met_control_unpause()
+//	}
+	
+//	///@func met_is_active
+//	met_is_active = function()
+//	{
+//		anim_struct.met_vars_is_anim_active()
+//	}
+//}
+
+/////@func AnimGroup(_id, _groupName, _animsArray)
+/////@param {Asset.GMObject|Id.Instance} _id
+/////@param {Array<Array<Struct.AnimGroupElem>>} _animsArray
+//function AnimGroup(_id, _animsArray) constructor
+//{
+//	state = 0
+//	inst = _id
+//	anims_array = _animsArray
+//}
+
+#endregion
