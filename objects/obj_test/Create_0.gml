@@ -1,6 +1,6 @@
 // Создание экземпляра конструктора, который контролирует анимацию
-anim_move_x = new Anim(id, nameof(x))
-anim_pulse = new Anim(id, [nameof(image_xscale), nameof(image_yscale)])
+anim_move_x = new AnimStep(id, nameof(x))
+anim_pulse = new AnimStep(id, [nameof(image_xscale), nameof(image_yscale)])
 
 // Устанавливаем смену цвета квадрата и запуск анимации пульсации при достижении ключевого значения
 // (так как коллбек исполняется в контексте экземпляра конструктора, 
