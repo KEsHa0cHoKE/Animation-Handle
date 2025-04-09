@@ -743,20 +743,20 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			
 			///@func __met_add_animatable_vars_to_instance()
 			///@ignore
-			__met_add_animatable_vars_to_instance = function()
+			static __met_add_animatable_vars_to_instance = function()
 			{
 				var _animVars = variable_instance_get(inst, __INSTANCE_ANIMATABLE_VARS_NAME)
 				var _varNames = var_names_to_anim
 			
 				with {_animVars, _varNames} array_foreach(_varNames, function(_e, _i){
-					show_debug_message($"var added {_e}")
+					//show_debug_message($"var added {_e}")
 					array_push(_animVars, _e)
 				})
 			}
 		
 			///@func __met_remove_animatable_vars_from_instance()
 			///@ignore
-			__met_remove_animatable_vars_from_instance = function()
+			static __met_remove_animatable_vars_from_instance = function()
 			{
 				var _animVars = variable_instance_get(inst, __INSTANCE_ANIMATABLE_VARS_NAME)
 				var _varNames = var_names_to_anim
@@ -766,7 +766,7 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 				
 					if (_index) != -1
 					{
-						show_debug_message($"var deleted {_e}")
+						//show_debug_message($"var deleted {_e}")
 						array_delete(_animVars, _index, 1)
 					}
 					else
@@ -823,6 +823,8 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			{
 				call_cancel(var_timesource)
 			}
+			
+			__met_remove_animatable_vars_from_instance()
 			
 			met_control_speed_reset()
 		}
