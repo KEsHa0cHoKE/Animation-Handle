@@ -1,9 +1,9 @@
 {
   "FolderOrderSettings":[
-    {"name":"Objects","order":2,"path":"folders/Objects.yy",},
-    {"name":"Rooms","order":3,"path":"folders/Rooms.yy",},
     {"name":"Easy Animate","order":4,"path":"folders/Easy Animate.yy",},
     {"name":"Curves","order":12,"path":"folders/Easy Animate/Curves.yy",},
+    {"name":"Objects","order":2,"path":"folders/Objects.yy",},
+    {"name":"Rooms","order":3,"path":"folders/Rooms.yy",},
   ],
   "ResourceOrderSettings":[
     {"name":"ANIM_CURVE_BOUNCE","order":1,"path":"animcurves/ANIM_CURVE_BOUNCE/ANIM_CURVE_BOUNCE.yy",},

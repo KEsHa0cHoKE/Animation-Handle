@@ -281,6 +281,7 @@ function AnimStep(_id, _varsStringToAnimate) constructor
 					if (is_struct(inst))
 					{
 						inst[$ var_names_to_anim[i]] = _value
+						show_message("asd")
 					}
 					else
 					{
@@ -591,7 +592,7 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 	// Переменные, которые задаются при запуске
 	var_anim_type				= undefined // E_ANIM-тип анимации (frames|frames_overall|time|time_overall)
 	var_period					= undefined // Время анимации
-	var_target_anim_curve		= undefined // Кривая
+	var_target_anim_curve		= ANIM_CURVE_LINEAR // Кривая
 	var_values_array			= undefined // Ключевые значения к которым стремится анимируемая переменная
 	
 	// Хранит id экземпляра объекта, к которому привязан экземпляр конструктора
@@ -625,9 +626,13 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 		{
 			inst = _id
 			
-			if (!variable_instance_exists(inst, __INSTANCE_ANIMATABLE_VARS_NAME))
+			if (!is_struct(inst) && !variable_instance_exists(inst, __INSTANCE_ANIMATABLE_VARS_NAME))
 			{
 				variable_instance_set(inst, __INSTANCE_ANIMATABLE_VARS_NAME, [])
+			}
+			else if (is_struct(inst) && !struct_exists(inst, __INSTANCE_ANIMATABLE_VARS_NAME))
+			{
+				inst[$ __INSTANCE_ANIMATABLE_VARS_NAME] = []
 			}
 			
 			if (!is_array(_varsString))
@@ -654,6 +659,22 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 					
 					var _value = variable_instance_get(_id, _varsString[i])
 				}
+			}
+		}
+		
+		///@func met_vars_set_inst(_instOrStruct)
+		///@desc Привязывает новую цель к конструктору (цель используется, чтобы изменять переменные объекта/структуры)
+		static met_vars_set_inst = function(_instOrStruct)
+		{
+			inst = _instOrStruct
+			
+			if (!is_struct(inst) && !variable_instance_exists(inst, __INSTANCE_ANIMATABLE_VARS_NAME))
+			{
+				variable_instance_set(inst, __INSTANCE_ANIMATABLE_VARS_NAME, [])
+			}
+			else if (is_struct(inst) && !struct_exists(inst, __INSTANCE_ANIMATABLE_VARS_NAME))
+			{
+				inst[$ __INSTANCE_ANIMATABLE_VARS_NAME] = []
 			}
 		}
 		
@@ -684,12 +705,13 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 		
 		#region Операции с коллбеками
 		
-		///@func met_callback_set(_keyframe, _methodOrFunc)
+		///@func met_callback_set(_keyframe, _methodOrFunc, [_deleteAfterCall = false])
 		///@desc Устанавливает функцию/метод, который будет выполнен при достижении указанного целевого значения.
 		/// Указанное целевое значение - номер ячейки массива с переданными ключевыми значениями для анимации.
-		///@arg {Real} _keyframe номер ключевого значения. Если конец анимации то ANIM_END или -1
-		///@arg {Function} _methodOrFunc функция/метод
-		static met_callback_set = function(_keyframe, _methodOrFunc)
+		///@param {Real} _keyframe номер ключевого значения. Если конец анимации то ANIM_END или -1
+		///@param {Function} _methodOrFunc функция/метод
+		///@param {Bool} _deleteAfterCall очистить коллбек после срабатываения (false по умолчанию)
+		static met_callback_set = function(_keyframe, _methodOrFunc, _deleteAfterCall = false)
 		{
 			if (!is_callable(_methodOrFunc))
 			{
@@ -698,15 +720,15 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			
 			if (_keyframe == ANIM_END)
 			{
-				var_callback_method_animEnd = method(undefined, _methodOrFunc)
+				var_callback_method_animEnd = [_methodOrFunc, _deleteAfterCall]
 				exit;
 			}
 			
-			var_callback_methods[_keyframe] = method(undefined, _methodOrFunc)
+			var_callback_methods[_keyframe] = [_methodOrFunc, _deleteAfterCall]
 		}
 		
 		///@func met_callback_delete(_keyframe)
-		///@arg {Real} _keyframe номер ключевого значения. Если конец анимации то ANIM_END или -1
+		///@param {Real} _keyframe номер ключевого значения. Если конец анимации то ANIM_END или -1
 		///@desc Удаляет функцию/метод, привязанный к кадру анимации
 		static met_callback_delete = function(_keyframe)
 		{
@@ -745,7 +767,10 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			///@ignore
 			static __met_add_animatable_vars_to_instance = function()
 			{
-				var _animVars = variable_instance_get(inst, __INSTANCE_ANIMATABLE_VARS_NAME)
+				var _animVars = (is_struct(inst) ? 
+				inst[$ __INSTANCE_ANIMATABLE_VARS_NAME] :
+				variable_instance_get(inst, __INSTANCE_ANIMATABLE_VARS_NAME))
+				
 				var _varNames = var_names_to_anim
 			
 				with {_animVars, _varNames} array_foreach(_varNames, function(_e, _i){
@@ -778,20 +803,17 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			
 			#endregion
 		
-		///@func met_control_start(_animType, _valuesArray, _period, _animCurve = ANIM_CURVE_LINEAR, _resetAllSpeeds = true)
+		///@func met_control_start(_animType, _valuesArray, _period, _animCurve)
 		///@desc Запускает анимацию
 		///@param {Real} _animType E_ANIM-тип анимации
 		///@param {Array<Real>} _valuesArray массив ключевых значений для анимации
 		///@param {Real} _period время анимации в установленной единице
-		///@param {Asset.GMAnimCurve} _animCurve кривая анимации, по умолчанию ANIM_CURVE_LINEAR
-		///@param {Bool} _resetAllSpeeds сбросить все скорости с предыдущей анимации
-		static met_control_start = function(_animType, _valuesArray, _period, _animCurve = ANIM_CURVE_LINEAR, _resetAllSpeeds = true)
+		///@param {Asset.GMAnimCurve} _animCurve кривая анимации
+		static met_control_start = function(_animType = var_anim_type,
+		_valuesArray = var_values_array,
+		_period = var_period,
+		_animCurve = var_target_anim_curve)
 		{
-			if (_resetAllSpeeds)
-			{
-				met_control_speed_reset()
-			}
-			
 			if (!is_undefined(var_timesource))
 			{
 				call_cancel(var_timesource)
@@ -803,9 +825,12 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			
 			var_state = 1
 			
+			var_curve_percent_speed		= undefined
+			var_state_pause_remembered	= undefined
+			
 			var_values_array = _valuesArray
 			var_period = _period
-			var_target_anim_curve = _animCurve
+			var_target_anim_curve = (is_undefined(_animCurve) ? ANIM_CURVE_LINEAR : _animCurve)
 			var_anim_type = _animType
 			var_start_value = variable_instance_get(inst, var_names_to_anim[0])
 			var_curve_percent = 0
@@ -826,7 +851,8 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			
 			__met_remove_animatable_vars_from_instance()
 			
-			met_control_speed_reset()
+			var_state_pause_remembered = undefined
+			var_curve_percent_speed	= undefined
 		}
 		
 		///@func met_control_pause()
@@ -853,26 +879,9 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			}
 			
 			var_state = var_state_pause_remembered
-			
 			var_state_pause_remembered = undefined
 			
 			__met_set_timer()
-		}
-		
-		///@func met_control_speed_reset()
-		///@desc Сбрасывает рассчитанные значения скорости
-		static met_control_speed_reset = function()
-		{
-			var_anim_type				= undefined
-			var_state_pause_remembered	= undefined
-			
-			var_values_array			= undefined
-			var_curve_percent_speed		= undefined
-			var_start_value				= undefined
-			var_curve_percent			= 0
-			
-			var_period					= undefined
-			var_target_anim_curve		= undefined
 		}
 	
 		#endregion
@@ -889,12 +898,17 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			{
 				if (!is_undefined(var_callback_methods))
 				{
-					if (
-						(array_length(var_callback_methods)-1 >= var_state-1) &&
-						(is_callable(var_callback_methods[var_state-1]))
-					   )
+					if ((array_length(var_callback_methods)-1 >= var_state-1) &&
+						(is_callable(var_callback_methods[var_state-1][0])))
 					{
-						method_call(var_callback_methods[var_state-1], [])
+						//show_message(var_callback_methods[var_state-1])
+						var_callback_methods[var_state-1][0]()
+						
+						// Если указано удалить коллбек после срабатывания
+						if (var_callback_methods[var_state-1][1] == true)
+						{
+							met_callback_delete(var_state-1)
+						}
 					}
 				}
 			
@@ -909,9 +923,15 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 					
 					var_state = 0
 					
-					if (is_callable(var_callback_method_animEnd))
+					if ((!is_undefined(var_callback_method_animEnd)) && is_callable(var_callback_method_animEnd[0]))
 					{
-						var_callback_method_animEnd()
+						var_callback_method_animEnd[0]()
+						
+						// Если указано удалить коллбек после срабатывания
+						if (var_callback_method_animEnd[1] == true)
+						{
+							met_callback_delete(ANIM_END)
+						}
 					}
 				}
 			}
@@ -951,7 +971,77 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			
 			#endregion
 			
+		
+		#region Кривая достигает одного значения и сбрасывается
+		
+		/////@func __animate()
+		/////@desc Анимирует переменные по кривой
+		/////@ignore
+		//__animate = function()
+		//{
+		//	if (var_state == 0) then exit;
 			
+		//	if (array_length(var_names_to_anim) < 1)
+		//	{
+		//		show_error("easy_animate : __animate -> Не заданы переменные для анимации в экземпляре конструктора. Воспользуйтесь методом met_vars_add для их добавления", true)
+		//	}
+			
+		//	var _targetValue	= var_values_array[var_state-1]
+		//	var _value
+		//	var _curveValue
+			
+		//	if (is_undefined(var_curve_percent_speed))
+		//	{
+		//		switch (var_anim_type)
+		//		{
+		//			case E_ANIM.FRAMES:
+		//				var_curve_percent_speed = 1/var_period
+		//			break;
+					
+		//			case E_ANIM.FRAMES_OVERALL:
+		//				var_curve_percent_speed = 1/(var_period/array_length(var_values_array))
+		//			break;
+					
+		//			case E_ANIM.TIME:
+		//				var_curve_percent_speed = 1/(var_period*game_get_speed(gamespeed_fps))
+		//			break;
+					
+		//			case E_ANIM.TIME_OVERALL:
+		//				var_curve_percent_speed = 1/(var_period*game_get_speed(gamespeed_fps)/array_length(var_values_array))
+		//			break;
+		//		}
+		//	}
+			
+			
+			
+		//	var_curve_percent += var_curve_percent_speed
+		//	_curveValue = __met_get_value_from_animCurve(var_curve_percent, var_target_anim_curve)
+				
+		//	_value = var_start_value+((_targetValue-var_start_value)*_curveValue)
+		//	__met_set_vars_to_inst(_value)
+			
+		//	if (var_state > 0)
+		//	{
+		//		__met_set_timer()
+		//	}
+			
+			
+			
+		//	if (var_curve_percent >= 1)
+		//	{
+		//		_value = var_start_value+((_targetValue-var_start_value))
+		//		__met_set_vars_to_inst(_value)
+				
+		//		var_start_value = variable_instance_get(inst, var_names_to_anim[0])
+		//		__met_next_state(var_values_array)
+		//	}
+		//}
+		
+		#endregion
+		
+		
+		
+		#region Кривая равномерно распределяется на все ключевые значения
 		
 		///@func __animate()
 		///@desc Анимирует переменные по кривой
@@ -974,29 +1064,35 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 				switch (var_anim_type)
 				{
 					case E_ANIM.FRAMES:
-						var_curve_percent_speed = 1/var_period
+						var_curve_percent_speed = 1/var_period*array_length(var_values_array)
 					break;
 					
 					case E_ANIM.FRAMES_OVERALL:
-						var_curve_percent_speed = 1/(var_period/array_length(var_values_array))
+						var_curve_percent_speed = 1/var_period
 					break;
 					
 					case E_ANIM.TIME:
-						var_curve_percent_speed = 1/(var_period*game_get_speed(gamespeed_fps))
+						var_curve_percent_speed = 1/(var_period*game_get_speed(gamespeed_fps))*array_length(var_values_array)
 					break;
 					
 					case E_ANIM.TIME_OVERALL:
-						var_curve_percent_speed = 1/(var_period*game_get_speed(gamespeed_fps)/array_length(var_values_array))
+						var_curve_percent_speed = 1/(var_period*game_get_speed(gamespeed_fps))
 					break;
 				}
 			}
 			
-			
-			
 			var_curve_percent += var_curve_percent_speed
 			_curveValue = __met_get_value_from_animCurve(var_curve_percent, var_target_anim_curve)
-				
-			_value = var_start_value+((_targetValue-var_start_value)*_curveValue)
+			
+			var _path = path_add()
+			path_set_closed(_path, false)
+			path_add_point(_path, var_start_value, 1, 0)
+			for (var i=0; i<array_length(var_values_array); i++)
+			{
+				path_add_point(_path, var_values_array[i], i+2, 0)
+			}
+			
+			_value = path_get_x(_path, _curveValue)
 			__met_set_vars_to_inst(_value)
 			
 			if (var_state > 0)
@@ -1004,23 +1100,23 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 				__met_set_timer()
 			}
 			
-			if (var_curve_percent >= 1)
+			
+			var _newState = floor(path_get_y(_path, _curveValue))
+			if (_newState > var_state)
 			{
-				var_curve_percent = 1
-					_curveValue = __met_get_value_from_animCurve(var_curve_percent, var_target_anim_curve)
-				var_curve_percent = 0
-				
-				_value = var_start_value+((_targetValue-var_start_value)*_curveValue)
-				__met_set_vars_to_inst(_value)
-				
-				var_start_value = variable_instance_get(inst, var_names_to_anim[0])
 				__met_next_state(var_values_array)
 			}
+			
+			path_delete(_path)
 		}
 		
 		#endregion
+		
+		
+		
+		#endregion Обработка Анимаций
 	
-	#endregion
+	#endregion Методы
 	
 	
 	
@@ -1032,14 +1128,17 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 
 ///@func anim_is_var_animating(_id, _varName)
 ///@desc Возвращает, анимируется ли переменная объекта в данный момент
-///@param {Id.Instance|Asset.GMObject} _id
+///@param {Id.Instance|Asset.GMObject|Struct} _id
 ///@param {String} _varName
 ///@return {Bool}
 function anim_is_var_animating(_id, _varName)
 {
-	if (!variable_instance_exists(_id, __INSTANCE_ANIMATABLE_VARS_NAME)) then return false
+	if (!is_struct(_id) && !variable_instance_exists(_id, __INSTANCE_ANIMATABLE_VARS_NAME)) then return false
+	if (is_struct(_id) && !struct_exists(_id, __INSTANCE_ANIMATABLE_VARS_NAME)) then return false
 	
-	var _animatableVarsArray = variable_instance_get(_id, __INSTANCE_ANIMATABLE_VARS_NAME)
+	var _animatableVarsArray = (is_struct(_id) ?
+	_id[$ __INSTANCE_ANIMATABLE_VARS_NAME] :
+	variable_instance_get(_id, __INSTANCE_ANIMATABLE_VARS_NAME))
 	return (array_contains(_animatableVarsArray, _varName))
 }
 
