@@ -898,8 +898,9 @@ function AnimTs(_id, _varsStringToAnimate) constructor
 			{
 				if (!is_undefined(var_callback_methods))
 				{
-					if ((array_length(var_callback_methods)-1 >= var_state-1) &&
-						(is_callable(var_callback_methods[var_state-1][0])))
+					//show_message(var_callback_methods)
+					if (array_length(var_callback_methods) > var_state-1 && is_array(var_callback_methods[var_state-1]) &&
+						is_callable(var_callback_methods[var_state-1][0]))
 					{
 						//show_message(var_callback_methods[var_state-1])
 						var_callback_methods[var_state-1][0]()
