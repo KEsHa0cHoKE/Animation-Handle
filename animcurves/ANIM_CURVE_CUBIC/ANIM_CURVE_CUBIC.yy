@@ -11,7 +11,7 @@
   "name":"ANIM_CURVE_CUBIC",
   "parent":{
     "name":"Curves",
-    "path":"folders/Easy Animate/Curves.yy",
+    "path":"folders/Extensions/Easy Animate/Curves.yy",
   },
   "resourceType":"GMAnimCurve",
   "resourceVersion":"2.0",

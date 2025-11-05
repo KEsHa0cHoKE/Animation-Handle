@@ -12,7 +12,7 @@
   "name":"ANIM_CURVE_MID_SLOW",
   "parent":{
     "name":"Curves",
-    "path":"folders/Easy Animate/Curves.yy",
+    "path":"folders/Extensions/Easy Animate/Curves.yy",
   },
   "resourceType":"GMAnimCurve",
   "resourceVersion":"2.0",

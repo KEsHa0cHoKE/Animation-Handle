@@ -1,7 +1,8 @@
 {
   "FolderOrderSettings":[
-    {"name":"Easy Animate","order":4,"path":"folders/Easy Animate.yy",},
-    {"name":"Curves","order":12,"path":"folders/Easy Animate/Curves.yy",},
+    {"name":"Extensions","order":4,"path":"folders/Extensions.yy",},
+    {"name":"Easy Animate","order":1,"path":"folders/Extensions/Easy Animate.yy",},
+    {"name":"Curves","order":1,"path":"folders/Extensions/Easy Animate/Curves.yy",},
     {"name":"Objects","order":2,"path":"folders/Objects.yy",},
     {"name":"Rooms","order":3,"path":"folders/Rooms.yy",},
   ],
@@ -16,5 +17,6 @@
     {"name":"ANIM_CURVE_LINEAR","order":8,"path":"animcurves/ANIM_CURVE_LINEAR/ANIM_CURVE_LINEAR.yy",},
     {"name":"ANIM_CURVE_MID_SLOW","order":9,"path":"animcurves/ANIM_CURVE_MID_SLOW/ANIM_CURVE_MID_SLOW.yy",},
     {"name":"ANIM_CURVE_QUART","order":10,"path":"animcurves/ANIM_CURVE_QUART/ANIM_CURVE_QUART.yy",},
+    {"name":"easy_animate","order":2,"path":"scripts/easy_animate/easy_animate.yy",},
   ],
 }

@@ -6,7 +6,7 @@
   "name":"easy_animate",
   "parent":{
     "name":"Easy Animate",
-    "path":"folders/Easy Animate.yy",
+    "path":"folders/Extensions/Easy Animate.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
