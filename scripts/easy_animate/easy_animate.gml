@@ -1,9 +1,9 @@
 // by KEsHa_cHoKE
 // Анимация на time_source: простой режим + анимация по ключевым точкам (path)
 
-#macro __ANIM_VARS_TAG "__animatable_vars"
-#macro __ANIM_USE_DELTA false
-#macro ANIM_END -1
+#macro __ANIM_VARS_TAG 		"__animatable_vars"
+#macro __ANIM_USE_DELTA 	false
+#macro ANIM_END 			-1
 
 enum ANIM_UNITS {
     FRAMES,
@@ -332,8 +332,8 @@ function Anim(target, vars) constructor
         if (!private.active || private.paused || !_isTargetValid()) exit
         if (array_length(private.varNames) == 0) show_error("Anim: Не заданы переменные для анимации", true)
         
-        var dtMult = __ANIM_USE_DELTA ? (delta_time / game_get_speed(gamespeed_microseconds)) : 1
-        private.progress += private.speed * dtMult
+        var _dtMult = __ANIM_USE_DELTA ? (delta_time / game_get_speed(gamespeed_microseconds)) : 1
+        private.progress += private.speed * _dtMult
         
         if (private.isPathMode)
         {
@@ -400,7 +400,6 @@ function Anim(target, vars) constructor
     if (!is_array(vars)) private.varNames = [vars]
     else private.varNames = vars
     private.target = target
-    _registerVars()
 }
 
 
